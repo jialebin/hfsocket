@@ -3,3 +3,8 @@ setting = dict(
     static_path="statics",  # 设置静态文件路径
     xscf_cookies=True,  # 开启scf
 )
+
+# 注册数据表
+INSTALLED_MODELS = [
+
+]
