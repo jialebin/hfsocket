@@ -34,6 +34,8 @@ def main():
         setting['debug'] = True
     else:
         setting['debug'] = False
+    # 添加日志格式
+    [i.setFormatter(LogFormatter()) for i in logging.getLogger().handlers]
     app = tornado.web.Application(handlers=urls, **setting)
     http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(options.port)
