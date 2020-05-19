@@ -81,4 +81,4 @@ class ChatSocket(BaseWebSocket):
         :return:
         """
         logger.debug('got massage %r')
-        ChatSocket.send_updates(message)
+        ChatSocket.send_updates(message, "")

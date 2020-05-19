@@ -6,5 +6,5 @@ setting = dict(
 
 # 注册数据表
 INSTALLED_MODELS = [
-
+    'models.chat_log',
 ]
