@@ -11,6 +11,7 @@ from handlers.base.base_handler import BaseWebSocket, BaseHandler
 import logging
 logger = logging.getLogger()
 
+
 class MainHandler(BaseHandler):
     def get(self):
         self.write("测试主页函数")
@@ -40,6 +41,14 @@ class ChatSocket(BaseWebSocket):
         :param kwargs:
         :return:
         """
+        # 通过token获取用户
+        token = self.get_cookie("token", "")
+        if not token:
+            self.write_message({"type": "message", "message": "用户错误"})
+            super(ChatSocket, self).close()
+            return
+        else:
+            pass
         if self.get_current_user():
             self.user = self.get_current_user().name
         else:
