@@ -111,10 +111,10 @@ class AdminChatSocket(BaseWebSocket):
         :param origin:
         :return:
         """
-        # parsed_origin = urllib.parse.urlparse(origin)
-        # logging.info(parsed_origin)
-        # return parsed_origin.netloc.endswith("8080")
-        return True
+        parsed_origin = urllib.parse.urlparse(origin)
+        logging.info(parsed_origin)
+        return parsed_origin.netloc.endswith(".hfyt365.com")
+        # return True
 
     def open(self, *args: str, **kwargs: str):
         """
@@ -183,6 +183,7 @@ class ChatLogHandler(BaseHandler):
         for chat in chat_log:
             chat_logs.append(
                 {
+                    "receiver": chat.receiver_id,
                     "sender": chat.sender_id,
                     "type": chat.type,
                     "create_time": chat.create_time.strftime('%Y-%m-%d %H:%M:%S'),
