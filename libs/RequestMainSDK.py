@@ -1,3 +1,4 @@
+import os
 import urllib.request
 import threading
 import json
@@ -11,12 +12,18 @@ except ImportError:
 
 class ConFPub:
     # =======【HTTP客户端设置】===================================
-    # HTTP_CLIENT = "CURL"  # ("URLLIB", "CURL")
-    HTTP_CLIENT = "URLLIB"  # ("URLLIB", "CURL")
+    HTTP_CLIENT = "CURL"  # ("URLLIB", "CURL")
+    # HTTP_CLIENT = "URLLIB"  # ("URLLIB", "CURL")
+    # =======【证书路径设置】=====================================
+    # 证书路径,注意应该填写绝对路径
+    # SSLCERT_PATH = os.path.join(settings.BASE_DIR, 'apps/payment/keys/wechat_apiclient_cert.pem')
+    # SSLKEY_PATH = os.path.join(settings.BASE_DIR, 'apps/payment/keys/wechat_apiclient_key.pem')
+    SSLCERT_PATH = os.path.join("path", 'keys/cert.pem')
+    SSLKEY_PATH = os.path.join("path", 'keys/key.pem')
 
-    SSLKEY_PATH = ''
-
-    SSLCERT_PATH = ''
+    # =======【url设置】=======================================
+    # 支付异步通知url，商户根据实际开发过程设定
+    GetUser_URL = "http://www.hfyt365.com:8000/user/"
 
 
 class Singleton:
@@ -117,6 +124,22 @@ class CommonUtilPub:
 
     def bytes_to_odj(self, data):
         return json.loads(data)
+
+
+class GetUserPub(CommonUtilPub):
+
+    def get_user(self, token: str) -> dict:
+        """
+
+        :param token:
+        :return:
+        """
+        header = {
+            "Authorization": "JWT " + token
+        }
+        req = self.get(ConFPub.GetUser_URL, header)
+        user = self.bytes_to_odj(req)
+        return user
 
 
 if __name__ == '__main__':

@@ -18,6 +18,7 @@ class ChatLog(Base):
 
 
 '''
+用户消息设计
 消息设计
 {
 sender： 发送方 (用户/客服)(user/customer_service)
@@ -70,3 +71,30 @@ message：[
     message: "这是一条聊天消息"
 },
 '''
+
+"""
+客服消息设计
+接受消息设计
+{
+sender：发送者 (那个用户发送的消息)
+type：消息类型(image/str/url/list)，list为历史记录
+create_time: 发送时间
+message: 发送内容[image,url 均传输字符串，图片为链接暂未实现图片传输]
+}
+
+{
+receiver： 接收方 (那个用户接受消息)
+type：消息类型(image/str/url/list)，list为历史记录
+create_time: 发送时间
+message: 发送内容[image,url 均传输字符串，图片为链接暂未实现图片传输]
+}
+
+有用户链接时的消息
+{
+receiver： 接收方 (那个用户接受消息)
+type：message
+create_time: 发送时间
+message: {'user": 60}
+}
+
+"""
