@@ -1,6 +1,6 @@
 import urllib.request
 import threading
-import pycurl
+import json
 
 try:
     import pycurl
@@ -11,7 +11,8 @@ except ImportError:
 
 class ConFPub:
     # =======【HTTP客户端设置】===================================
-    HTTP_CLIENT = "CURL"  # ("URLLIB", "CURL")
+    # HTTP_CLIENT = "CURL"  # ("URLLIB", "CURL")
+    HTTP_CLIENT = "URLLIB"  # ("URLLIB", "CURL")
 
     SSLKEY_PATH = ''
 
@@ -25,7 +26,7 @@ class Singleton:
         if not hasattr(cls, "_instance"):
             with cls._instance_lock:
                 if not hasattr(cls, "_instance"):
-                    impl = cls.configure() if hasattr(cls, "configure") else cls
+                    impl = cls.confingure() if hasattr(cls, "confingure") else cls
                     instance = super(Singleton, cls).__new__(impl, *args, **kwargs)
                     if not isinstance(instance, cls):
                         instance.__init__(*args, **kwargs)
@@ -41,10 +42,14 @@ class UrllibClient:
 
     def post_json(self, json, url, headers: dict, second=30):
         if headers:
-            req = urllib.request.Request(url=url, headers=headers, data=json.encode())
+            if json:
+                req = urllib.request.Request(url=url, headers=headers, data=json.encode())
+            else:
+                req = urllib.request.Request(url=url, headers=headers,)
         else:
-            req = urllib.request.Request(url=url, data=json.encode())
-        date = urllib.request.urlopen(req, timeout=second).reade()
+            if json:
+                req = urllib.request.Request(url=url, data=json.encode())
+        date = urllib.request.urlopen(req, timeout=second).read()
         return date
 
     def post_json_ssl(self, json, url, headers=None, second=30):
@@ -69,7 +74,8 @@ class CurlClient:
         self.curl.setopt(pycurl.URL, url)
         self.curl.setopt(pycurl.TIMEOUT, second)
         if headers:
-            self.curl.setopt(pycurl.WRITEHEADER, headers)
+            header = ["{}:{}".format(k, v) for k, v in headers.items()]
+            self.curl.setopt(pycurl.HTTPHEADER, header)
         # 设置证书
         # 使用证书：cert 与 key 分别属于两个.pem文件
         # 默认格式为PEM，可以注释
@@ -99,12 +105,27 @@ class HttpClient(Singleton):
 class CommonUtilPub:
     """所有接口基类"""
 
-    def get(self, url, headers, second=30):
+    def get(self, url, headers=None, second=30):
         return HttpClient().get(url, headers, second=second)
 
-    def post_json(self, json, url, headers, second=30):
+    def post_json(self, json, url, headers=None, second=30):
         """以POST方式提交json到对应接口的url"""
-        return HttpClient().post_json(json, url, headers, second=second)
+        return HttpClient().post_json(json, url, headers=None, second=second)
 
-    def post_json_ssl_curl(self, json, url, header, second=30):
-        return HttpClient().post_json_ssl(json, url, header, second=second)
+    def post_json_ssl_curl(self, json, url, headers=None, second=30):
+        return HttpClient().post_json_ssl(json, url, headers, second=second)
+
+    def bytes_to_odj(self, data):
+        return json.loads(data)
+
+
+if __name__ == '__main__':
+    cli = CommonUtilPub()
+
+    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6IjE1NzMyNjcxOTc3IiwiZXhwIjoxNTkwMDY1MTMzLCJ1c2VyX2lkIjo2MCwiZW1haWwiOiJqbGIxMDI0QDE2My5jb20ifQ.ck-nTCeLgegnWfe6gi7-uUcyCurhg4eBEF857gyXH1E"
+    header = {
+        "Authorization": "JWT " + token
+    }
+    a = cli.get("http://www.hfyt365.com:8000/user/", header)
+    a = cli.bytes_to_odj(a)
+    print(a)
