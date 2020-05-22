@@ -121,7 +121,7 @@ class ChatSocket(BaseWebSocket):
         :return:
         """
         # chat = json.loads(chat)
-        for user, waiter in AdminChatSocket.waiters.items():
+        for waiter in AdminChatSocket.waiters:
             try:
                 # waiter.set_header("Content-Type", "application/json")
                 waiter.write_message(chat)
@@ -162,7 +162,7 @@ class ChatSocket(BaseWebSocket):
 
 
 class AdminChatSocket(BaseWebSocket):
-    waiters = dict()
+    waiters = list()
     cache = []
     cache_size = 200
 
@@ -185,7 +185,7 @@ class AdminChatSocket(BaseWebSocket):
         :return:
         """
         # 通过token获取用户
-        AdminChatSocket.waiters[1] = self
+        AdminChatSocket.waiters.append(self)
 
     def on_close(self) -> None:
         """
@@ -193,7 +193,7 @@ class AdminChatSocket(BaseWebSocket):
         :return:
         """
         try:
-            del ChatSocket.waiters[self.user]
+            del ChatSocket.waiters[self]
         except TypeError:
             pass
 
@@ -211,10 +211,9 @@ class AdminChatSocket(BaseWebSocket):
         :param receiver: 接受者
         :return:
         """
-        waiter = ChatSocket.waiters.get(receiver)
         try:
             # waiter.set_header("Content-Type", "application/json")
-            waiter.write_message(json.dumps(chat, ensure_ascii=False))
+            cls.write_message(json.dumps(chat, ensure_ascii=False))
         except WebSocketClosedError as e:
             logger.error("socket is closed")
         except StreamClosedError as e:
