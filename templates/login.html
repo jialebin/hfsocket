@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ static_url('css/login.css') }}">
+    <script src="{{ static_url('js/login.js') }}"></script>
+    <title>用户登录</title>
+</head>
+<body>
+<dev id="login">
+    <form action="/login?next={{ next }}" method="post">
+        {% module xsrf_form_html() %}
+        <p class="t1"> 记录生活中的点点滴滴！ </p>
+        <p class="t2" onclick="p_1_fun()"> 我也不知道要写啥 </p>
+        <p><input type="text" autocomplete="off"  class="textbox" placeholder="请输入用户名" name="username" > </p>
+        <p><input type="password" autocomplete="new-password" class="textbox" placeholder="请输入密码" name="password"></p>
+        <p> <input type="submit" value="确认登录" class="submit"></p>
+        <p class="text" style="text-align: right" onclick="forget_password_fun()">忘记密码</p>
+<!--        <p><input type="button" value="注册账号" class="button" id="logon_button" onclick="window.open('register', '_self');"></p>-->
+    </form>
+</dev>
+</body>
+</html>

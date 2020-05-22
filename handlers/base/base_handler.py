@@ -38,7 +38,7 @@ class BaseHandler(tornado.web.RequestHandler, SessionMixin):
         # 查询session中的username
         if self.session.get("username"):
             # 返回user对象
-            return None
+            return self.session.get('username')
         else:
             return None
 
