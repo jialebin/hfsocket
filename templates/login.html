@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-cn">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{{ static_url('css/login.css') }}">
@@ -10,8 +10,8 @@
 <dev id="login">
     <form action="/login?next={{ next }}" method="post">
         {% module xsrf_form_html() %}
-        <p class="t1"> 记录生活中的点点滴滴！ </p>
-        <p class="t2" onclick="p_1_fun()"> 我也不知道要写啥 </p>
+        <p class="t1"> 行丰商城登录！ </p>
+        <p class="t2" onclick="p_1_fun()"> 不要乱登录 </p>
         <p><input type="text" autocomplete="off"  class="textbox" placeholder="请输入用户名" name="username" > </p>
         <p><input type="password" autocomplete="new-password" class="textbox" placeholder="请输入密码" name="password"></p>
         <p> <input type="submit" value="确认登录" class="submit"></p>

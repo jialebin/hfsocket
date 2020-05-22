@@ -142,6 +142,8 @@ class ChatSocket(BaseWebSocket):
         # logger.info('got massage %r')
         logger.info("用户消息类型{}".format(type(message)))
         logger.info("用户消息 === {}".format(message))
+        self.write_message(message if isinstance(message, str) else json.dumps(message, ensure_ascii=False))
+        return
         if not message:
             return
         self.create_chat_log(message)
