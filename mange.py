@@ -15,6 +15,8 @@ define("debug", default=True, help=" run for debug", type=bool)
 
 # 日志记录位置
 # options.log_file_prefix = "logs/hf_websocket.log"
+# 日志等级默认为info
+options.logging = "debug" if options.debug else "info"
 
 
 # 日志输出形式设置

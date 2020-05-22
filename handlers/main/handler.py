@@ -27,6 +27,7 @@ class MainHandler(BaseHandler):
     def get(self):
         # self.write("小改一下")
         # self.render()
+        logger.debug("客服登录，登录名 = {}".format(self.get_current_user()))
         self.render('index.html')
 
 
@@ -42,8 +43,8 @@ class LoginHandler(BaseHandler):
         password = self.get_argument("password", "")
         if username == 'hfyt_admin' and password == "hfyt67251751":
             self.success_login()
-            logger.info(self.request.headers)
-            logger.info("next = {}".format(self.get_argument('next', "/")))
+            logger.debug(self.request.headers)
+            logger.debug("next = {}".format(self.get_argument('next', "/")))
             self.redirect(self.get_argument('next', "/"))
         else:
             self.write("登录失败")
@@ -65,7 +66,7 @@ class ChatSocket(BaseWebSocket):
         :return:
         """
         # parsed_origin = urllib.parse.urlparse(origin)
-        # logging.info(parsed_origin)
+        # logging.debug(parsed_origin)
         # return parsed_origin.netloc.endswith("8080")
         return True
 
@@ -94,7 +95,7 @@ class ChatSocket(BaseWebSocket):
         }
         ChatSocket.send_updates(json.dumps(open_socket, ensure_ascii=False))
         ChatSocket.waiters[self.user.get("id")] = self
-        logger.info("用户链接 --- {}".format(self.user.get("username")))
+        logger.debug("用户链接 --- {}".format(self.user.get("username")))
         self.write_message(json.dumps({"type": "str", "message": "链接成功"}))
 
     def on_close(self) -> None:
@@ -102,7 +103,7 @@ class ChatSocket(BaseWebSocket):
         websocket断开时的操作
         :return:
         """
-        logger.info("断开连接 -- {}".format(self.user.get('username')))
+        logger.debug("断开连接 -- {}".format(self.user.get('username')))
         try:
             del ChatSocket.waiters[self.user.get('id')]
         except TypeError:
@@ -131,7 +132,7 @@ class ChatSocket(BaseWebSocket):
             except WebSocketClosedError as e:
                 logger.error("socket is closed")
             except StreamClosedError as e:
-                logger.error("Error sending message", exc_info=True)
+                logger.error("Error sending message", exc_debug=True)
 
     def on_message(self, message: Union[str, bytes]):
         """
@@ -139,9 +140,9 @@ class ChatSocket(BaseWebSocket):
         :param message:
         :return:
         """
-        # logger.info('got massage %r')
-        logger.info("用户消息类型{}".format(type(message)))
-        logger.info("用户消息 === {}".format(message))
+        # logger.debug('got massage %r')
+        logger.debug("用户消息类型{}".format(type(message)))
+        logger.debug("用户消息 === {}".format(message))
         self.write_message(message if isinstance(message, str) else json.dumps(message, ensure_ascii=False))
         return
         if not message:
@@ -156,7 +157,7 @@ class ChatSocket(BaseWebSocket):
         :return: ChatLog()
         """
         chat_log = ChatLog()
-        logger.info('message = {}'.format(message))
+        logger.debug('message = {}'.format(message))
         message_dic = json.loads(message)
         chat_log.message = message_dic.get("message")
         chat_log.sender_id = self.user.get('id')
@@ -178,7 +179,7 @@ class AdminChatSocket(BaseWebSocket):
         :return:
         """
         # parsed_origin = urllib.parse.urlparse(origin)
-        # logging.info(parsed_origin)
+        # logging.debug(parsed_origin)
         # return parsed_origin.netloc.endswith(".hfyt365.com")
         return True
 
@@ -222,7 +223,7 @@ class AdminChatSocket(BaseWebSocket):
         except WebSocketClosedError as e:
             logger.error("socket is closed")
         except StreamClosedError as e:
-            logger.error("Error sending message", exc_info=True)
+            logger.error("Error sending message")
 
     def on_message(self, message: Union[str, bytes]):
         """
@@ -230,7 +231,7 @@ class AdminChatSocket(BaseWebSocket):
         :param message:
         :return:
         """
-        logger.info('got massage %r')
+        logger.debug('got massage %r')
         message = json.loads(message)
         receiver = message['receiver']
         del message["receiver"]
