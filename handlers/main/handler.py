@@ -32,6 +32,9 @@ class MainHandler(BaseHandler):
 
 class LoginHandler(BaseHandler):
     def get(self):
+        if self.get_current_user():
+            self.redirect(self.get_argument('next', "/"))
+            return
         self.render('login.html', next=self.get_argument("next", '/'))
 
     def post(self):
