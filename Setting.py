@@ -3,7 +3,7 @@ setting = dict(
     static_path="statics",  # 设置静态文件路径
     xscf_cookies=True,  # 开启scf
     login_url="/login",  # 重定向到登录页面
-pycket={
+    pycket={
         "engine": "redis",  # 配置存储类型
         "storage": {
             "host": "localhost",
@@ -18,6 +18,8 @@ pycket={
         }
     },
     cookie_secret="aaa",  # 对cookie进行签名的字符串
+    websocket_ping_interval=1,
+    websocket_ping_timeout=20,
 )
 
 # 注册数据表

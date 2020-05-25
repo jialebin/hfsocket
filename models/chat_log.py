@@ -88,10 +88,7 @@ type:消息类型(image/str/url/list)，list为历史记录
 create_time: 发送时间
 message: 发送内容[image,url 均传输字符串，图片为链接暂未实现图片传输]
 }
-{
-"type":"str",
-"message": "发送内容[image,url 均传输字符串，图片为链接暂未实现图片传输]"
-}
+{"receiver":227,"type":"str""message": "发送内容[image,url 均传输字符串，图片为链接暂未实现图片传输]"}
 
 
 有用户链接时的消息

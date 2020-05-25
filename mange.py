@@ -12,9 +12,10 @@ from handlers.urls import urls
 # 定义端口
 define("port", default=8001, help="run port", type=int, )
 define("debug", default=True, help=" run for debug", type=bool)
+options.parse_command_line()
 
 # 日志记录位置
-# options.log_file_prefix = "logs/hf_websocket.log"
+options.log_file_prefix = "logs/hf_websocket.log"
 # 日志等级默认为info
 options.logging = "debug" if options.debug else "info"
 

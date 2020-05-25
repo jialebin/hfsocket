@@ -1,5 +1,7 @@
 import json
 from datetime import datetime
+from json.decoder import JSONDecodeError
+
 from tornado.web import authenticated
 from sqlalchemy.orm import Query
 from tornado.iostream import StreamClosedError
@@ -96,7 +98,7 @@ class ChatSocket(BaseWebSocket):
         ChatSocket.send_updates(json.dumps(open_socket, ensure_ascii=False))
         ChatSocket.waiters[self.user.get("id")] = self
         logger.debug("用户链接 --- {}".format(self.user.get("username")))
-        self.write_message(json.dumps({"type": "str", "message": "链接成功"}))
+        self.write_message(json.dumps({"type": "str", "message": "链接成功"}, ensure_ascii=False))
 
     def on_close(self) -> None:
         """
@@ -110,6 +112,17 @@ class ChatSocket(BaseWebSocket):
             pass
         except AttributeError:
             pass
+        except KeyError:
+            pass
+        open_socket = {
+            "type": "message",
+            "message": {
+                "message": "close websocket",
+                "user_name": self.user.get('username'),
+                "user_id": self.user.get('id')
+            }
+        }
+        ChatSocket.send_updates(json.dumps(open_socket, ensure_ascii=False))
 
     @classmethod
     def update_cache(cls, chat):
@@ -143,8 +156,8 @@ class ChatSocket(BaseWebSocket):
         # logger.debug('got massage %r')
         logger.debug("用户消息类型{}".format(type(message)))
         logger.debug("用户消息 === {}".format(message))
-        self.write_message(message if isinstance(message, str) else json.dumps(message, ensure_ascii=False))
-        return
+        # self.write_message(message if isinstance(message, str) else json.dumps(message, ensure_ascii=False))
+        # return
         if not message:
             return
         self.create_chat_log(message)
@@ -157,8 +170,11 @@ class ChatSocket(BaseWebSocket):
         :return: ChatLog()
         """
         chat_log = ChatLog()
-        logger.debug('message = {}'.format(message))
-        message_dic = json.loads(message)
+        # logger.debug('message = {}'.format(message))
+        try:
+            message_dic = json.loads(message)
+        except JSONDecodeError:
+            return
         chat_log.message = message_dic.get("message")
         chat_log.sender_id = self.user.get('id')
         chat_log.create_time = datetime.now()
@@ -199,7 +215,7 @@ class AdminChatSocket(BaseWebSocket):
         :return:
         """
         try:
-            del ChatSocket.waiters[self]
+            AdminChatSocket.waiters.remove(self)
         except TypeError:
             pass
 
@@ -219,11 +235,15 @@ class AdminChatSocket(BaseWebSocket):
         """
         try:
             # waiter.set_header("Content-Type", "application/json")
-            cls.write_message(json.dumps(chat, ensure_ascii=False))
+            logger.debug("给 {} 发消息 {}".format(receiver, chat))
+            waiter = ChatSocket.waiters.get(receiver)
+            waiter.write_message(json.dumps(chat, ensure_ascii=False))
         except WebSocketClosedError as e:
             logger.error("socket is closed")
         except StreamClosedError as e:
             logger.error("Error sending message")
+        except TypeError:
+            pass
 
     def on_message(self, message: Union[str, bytes]):
         """
@@ -231,9 +251,19 @@ class AdminChatSocket(BaseWebSocket):
         :param message:
         :return:
         """
-        logger.debug('got massage %r')
-        message = json.loads(message)
-        receiver = message['receiver']
+        # logger.debug('got massage %r')
+        try:
+            message = json.loads(message)
+        except JSONDecodeError:
+            logger.warning("错误数据{}".format(message))
+            self.write_message(json.dumps({"type": "message",
+                                           "message": '数据错误消息类似：{"receiver":227,"type":"str""message": "发送内容[image,url 均传输字符串，图片为链接暂未实现图片传输]"}'},
+                                          ensure_ascii=False))
+            return
+        receiver = message.get('receiver')
+        if not receiver and not isinstance(receiver, int):
+            logger.warning("消息错误 {}".format(message))
+            return
         del message["receiver"]
         self.create_chat_log(receiver, message)
         AdminChatSocket.send_updates(message, receiver)
