@@ -8,6 +8,10 @@ import re
 
 from libs.db.dbsession import dbSession
 
+import logging
+
+logger = logging.getLogger()
+
 
 class BaseWebSocket(tornado.websocket.WebSocketHandler, SessionMixin):
     """
@@ -47,3 +51,14 @@ class BaseHandler(tornado.web.RequestHandler, SessionMixin):
 
     def on_finish(self) -> None:
         self.db.close()
+
+    # 允许跨域访问的地址
+    def set_default_headers(self) -> None:
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        self.set_header("Access-Control-Allow-Credentials", "true")
+        self.set_header("Access-Control-Allow-Headers",
+                        "Content-Type")
+        self.set_header("Access-Control-Expose-Headers",
+                        "Content-Type")

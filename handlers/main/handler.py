@@ -89,6 +89,7 @@ class ChatSocket(BaseWebSocket):
             self.user = GetUserPub().get_user(token)
         open_socket = {
             "type": "message",
+            "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             "message": {
                 "message": "open websocket",
                 "user_name": self.user.get('username'),
@@ -98,7 +99,9 @@ class ChatSocket(BaseWebSocket):
         ChatSocket.send_updates(json.dumps(open_socket, ensure_ascii=False))
         ChatSocket.waiters[self.user.get("id")] = self
         logger.debug("用户链接 --- {}".format(self.user.get("username")))
-        self.write_message(json.dumps({"type": "str", "message": "链接成功"}, ensure_ascii=False))
+        self.write_message(
+            json.dumps({"type": "str", "message": "链接成功", "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'), },
+                       ensure_ascii=False))
 
     def on_close(self) -> None:
         """
@@ -138,26 +141,27 @@ class ChatSocket(BaseWebSocket):
         :return:
         """
         # chat = json.loads(chat)
-        for waiter in AdminChatSocket.waiters:
+        try:
+            # waiter.set_header("Content-Type", "application/json")
             try:
-                # waiter.set_header("Content-Type", "application/json")
-                try:
-                    chat = json.loads(chat)
-                except JSONDecodeError as e:
-                    error_socket = {
-                        "type": "message",
-                        "message": "消息格式错误",
-                        "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    }
+                chat = json.loads(chat)
+            except JSONDecodeError as e:
+                error_socket = {
+                    "type": "message",
+                    "message": "消息格式错误",
+                    "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
 
-                    cls.write_message(json.dumps(error_socket, ensure_ascii=False))
-                    return
-                chat['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                waiter.write_message(json.dumps(chat, ensure_ascii=False))
-            except WebSocketClosedError as e:
-                logger.error("socket is closed")
-            except StreamClosedError as e:
-                logger.error("Error sending message", exc_debug=True)
+                cls.write_message(json.dumps(error_socket, ensure_ascii=False))
+                return
+            chat['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        except WebSocketClosedError as e:
+            logger.error("socket is closed")
+        except StreamClosedError as e:
+            logger.error("Error sending message", exc_debug=True)
+        for waiter in AdminChatSocket.waiters:
+            logger.debug("给客服的最终消息{}".format(json.dumps(chat, ensure_ascii=False)))
+            waiter.write_message(json.dumps(chat, ensure_ascii=False))
 
     def on_message(self, message: Union[str, bytes]):
         """
@@ -250,6 +254,7 @@ class AdminChatSocket(BaseWebSocket):
             logger.debug("给 {} 发消息 {}".format(receiver, chat))
             waiter = ChatSocket.waiters.get(receiver)
             chat['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            logger.debug("给用户的最终消息{}".format(json.dumps(chat, ensure_ascii=False)))
             waiter.write_message(json.dumps(chat, ensure_ascii=False))
         except WebSocketClosedError as e:
             logger.error("socket is closed")
@@ -312,7 +317,7 @@ class ChatLogHandler(BaseHandler):
             return
         page = int(page)
         chat_log = self.db.query(ChatLog).filter(or_(ChatLog.receiver_id == user, ChatLog.sender_id == user)).order_by(
-            ChatLog.create_time).slice(20 * (page - 1), 20 * page).all()
+            ChatLog.create_time.desc()).slice(20 * (page - 1), 20 * page).all()
         chat_logs = []
         for chat in chat_log:
             chat_logs.append(
@@ -326,6 +331,10 @@ class ChatLogHandler(BaseHandler):
             )
         self.write(json.dumps(chat_logs))
         self.set_header("Content-Type", "application/json")
+
+    def options(self):
+        self.set_status(204)
+        self.finish()
 
 
 '''
