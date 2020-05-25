@@ -141,7 +141,19 @@ class ChatSocket(BaseWebSocket):
         for waiter in AdminChatSocket.waiters:
             try:
                 # waiter.set_header("Content-Type", "application/json")
-                waiter.write_message(chat)
+                try:
+                    chat = json.loads(chat)
+                except JSONDecodeError as e:
+                    error_socket = {
+                        "type": "message",
+                        "message": "消息格式错误",
+                        "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    }
+
+                    cls.write_message(json.dumps(error_socket, ensure_ascii=False))
+                    return
+                chat['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                waiter.write_message(json.dumps(chat, ensure_ascii=False))
             except WebSocketClosedError as e:
                 logger.error("socket is closed")
             except StreamClosedError as e:
@@ -237,6 +249,7 @@ class AdminChatSocket(BaseWebSocket):
             # waiter.set_header("Content-Type", "application/json")
             logger.debug("给 {} 发消息 {}".format(receiver, chat))
             waiter = ChatSocket.waiters.get(receiver)
+            chat['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             waiter.write_message(json.dumps(chat, ensure_ascii=False))
         except WebSocketClosedError as e:
             logger.error("socket is closed")
