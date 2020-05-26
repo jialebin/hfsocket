@@ -123,6 +123,8 @@ class CommonUtilPub:
         return HttpClient().post_json_ssl(json, url, headers, second=second)
 
     def bytes_to_odj(self, data):
+        if isinstance(data, bytes):
+            data = data.decode()
         return json.loads(data)
 
 
