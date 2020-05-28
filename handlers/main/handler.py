@@ -97,7 +97,7 @@ class ChatSocket(BaseWebSocket):
                 "user_id": self.user.get('id')
             }
         }
-        ChatSocket.send_updates(json.dumps(open_socket, ensure_ascii=False))
+        ChatSocket.send_updates(open_socket)
         ChatSocket.waiters[self.user.get("id")] = {
             "socket": self,
             "username": self.user.get('username'),
@@ -130,7 +130,7 @@ class ChatSocket(BaseWebSocket):
                 "user_id": self.user.get('id')
             }
         }
-        ChatSocket.send_updates(json.dumps(open_socket, ensure_ascii=False))
+        ChatSocket.send_updates(open_socket)
 
     @classmethod
     def update_cache(cls, chat):
@@ -146,24 +146,7 @@ class ChatSocket(BaseWebSocket):
         :return:
         """
         # chat = json.loads(chat)
-        try:
-            # waiter.set_header("Content-Type", "application/json")
-            try:
-                chat = json.loads(chat)
-            except JSONDecodeError as e:
-                error_socket = {
-                    "type": "message",
-                    "message": "消息格式错误",
-                    "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                }
-
-                cls.write_message(json.dumps(error_socket, ensure_ascii=False))
-                return
-            chat['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        except WebSocketClosedError as e:
-            logger.error("socket is closed")
-        except StreamClosedError as e:
-            logger.error("Error sending message", exc_debug=True)
+        chat['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         for waiter in AdminChatSocket.waiters:
             logger.debug("给客服的最终消息{}".format(json.dumps(chat, ensure_ascii=False)))
 
@@ -193,7 +176,7 @@ class ChatSocket(BaseWebSocket):
             }
             self.write_message(json.dumps(error_socket, ensure_ascii=False))
         message_dic["user_id"] = self.user.get("id")
-        ChatSocket.send_updates(json.dumps(message_dic, ensure_ascii=False))
+        ChatSocket.send_updates(message_dic)
 
     def create_chat_log(self, message):
         """
