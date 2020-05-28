@@ -165,7 +165,6 @@ class ChatSocket(BaseWebSocket):
         except StreamClosedError as e:
             logger.error("Error sending message", exc_debug=True)
         for waiter in AdminChatSocket.waiters:
-            chat["user_id"] = cls.user.id
             logger.debug("给客服的最终消息{}".format(json.dumps(chat, ensure_ascii=False)))
 
             waiter.write_message(json.dumps(chat, ensure_ascii=False))
@@ -184,7 +183,17 @@ class ChatSocket(BaseWebSocket):
         if not message:
             return
         self.create_chat_log(message)
-        ChatSocket.send_updates(message)
+        try:
+            message_dic = json.loads(message)
+        except JSONDecodeError:
+            error_socket = {
+                "type": "message",
+                "message": "消息格式错误",
+                "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
+            self.write_message(json.dumps(error_socket, ensure_ascii=False))
+        message_dic["user_id"] = self.user.get("id")
+        ChatSocket.send_updates(json.dumps(message_dic, ensure_ascii=False))
 
     def create_chat_log(self, message):
         """
