@@ -97,7 +97,11 @@ class ChatSocket(BaseWebSocket):
             }
         }
         ChatSocket.send_updates(json.dumps(open_socket, ensure_ascii=False))
-        ChatSocket.waiters[self.user.get("id")] = self
+        ChatSocket.waiters[self.user.get("id")] = {
+            "socket": self,
+            "username": self.user.get('username'),
+            "user_id": self.user.get('id')
+        }
         logger.debug("用户链接 --- {}".format(self.user.get("username")))
         self.write_message(
             json.dumps({"type": "str", "message": "链接成功", "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'), },
@@ -224,6 +228,16 @@ class AdminChatSocket(BaseWebSocket):
         """
         # 通过token获取用户
         AdminChatSocket.waiters.append(self)
+        self.write_message(
+            json.dumps(
+                {
+                    "typ": "message",
+                    "users": [
+                        {"username": v["username"], "user_id": v["user_id"]}
+                        for k, v in ChatSocket.waiters.items()]
+                }
+            )
+        )
 
     def on_close(self) -> None:
         """
@@ -252,7 +266,7 @@ class AdminChatSocket(BaseWebSocket):
         try:
             # waiter.set_header("Content-Type", "application/json")
             logger.debug("给 {} 发消息 {}".format(receiver, chat))
-            waiter = ChatSocket.waiters.get(receiver)
+            waiter = ChatSocket.waiters.get(receiver).get("socket")
             chat['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             logger.debug("给用户的最终消息{}".format(json.dumps(chat, ensure_ascii=False)))
             waiter.write_message(json.dumps(chat, ensure_ascii=False))
