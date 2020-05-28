@@ -158,6 +158,10 @@ class ChatSocket(BaseWebSocket):
         :param message:
         :return:
         """
+
+        if message == "ping":
+            self.write_message("ping")
+            return
         # logger.debug('got massage %r')
         logger.debug("用户消息类型{}".format(type(message)))
         logger.debug("用户消息 === {}".format(message))
@@ -280,6 +284,9 @@ class AdminChatSocket(BaseWebSocket):
         :return:
         """
         # logger.debug('got massage %r')
+        if message == "ping":
+            self.write_message("ping")
+            return
         try:
             message = json.loads(message)
         except JSONDecodeError:
