@@ -231,7 +231,7 @@ class AdminChatSocket(BaseWebSocket):
         self.write_message(
             json.dumps(
                 {
-                    "typ": "message",
+                    "type": "message",
                     "message": "The users in the link",
                     "users": [
                         {"username": v["username"], "user_id": v["user_id"]}
