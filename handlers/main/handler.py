@@ -232,6 +232,7 @@ class AdminChatSocket(BaseWebSocket):
             json.dumps(
                 {
                     "typ": "message",
+                    "message": "The users in the link",
                     "users": [
                         {"username": v["username"], "user_id": v["user_id"]}
                         for k, v in ChatSocket.waiters.items()]
