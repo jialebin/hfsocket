@@ -83,7 +83,7 @@ class ChatSocket(BaseWebSocket):
         # 通过token获取用户
         token = self.get_argument("token", None)
         if not token:
-            self.write_message({"type": "message", "message": "用户错误"})
+            self.write_message(json.dumps({"type": "message", "message": "用户错误"}, ensure_ascii=False))
             super(ChatSocket, self).close()
             return
         else:
@@ -113,7 +113,7 @@ class ChatSocket(BaseWebSocket):
         websocket断开时的操作
         :return:
         """
-        logger.debug("断开连接 -- {}".format(self.user.get('username')))
+        # logger.debug("断开连接 -- {}".format(self.user.get('username')))
         try:
             del ChatSocket.waiters[self.user.get('id')]
         except TypeError:
@@ -122,6 +122,8 @@ class ChatSocket(BaseWebSocket):
             pass
         except KeyError:
             pass
+        if not self.user:
+            return
         open_socket = {
             "type": "message",
             "message": {
