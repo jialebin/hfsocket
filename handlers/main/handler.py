@@ -60,6 +60,7 @@ class ChatSocket(BaseWebSocket):
     waiters = dict()
     cache = []
     cache_size = 200
+    user = None
 
     def check_origin(self, origin: str) -> bool:
         """
