@@ -164,7 +164,9 @@ class ChatSocket(BaseWebSocket):
         except StreamClosedError as e:
             logger.error("Error sending message", exc_debug=True)
         for waiter in AdminChatSocket.waiters:
+            chat["user_id"] = cls.user.id
             logger.debug("给客服的最终消息{}".format(json.dumps(chat, ensure_ascii=False)))
+
             waiter.write_message(json.dumps(chat, ensure_ascii=False))
 
     def on_message(self, message: Union[str, bytes]):
