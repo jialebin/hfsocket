@@ -164,6 +164,9 @@ class ChatSocket(BaseWebSocket):
         if message == "ping":
             self.write_message("ping")
             return
+        if message.isdigit():
+            self.write_message(message)
+            return
         # logger.debug('got massage %r')
         logger.debug("用户消息类型{}".format(type(message)))
         logger.debug("用户消息 === {}".format(message))
@@ -285,6 +288,9 @@ class AdminChatSocket(BaseWebSocket):
         :param message:
         :return:
         """
+        if message.isdigit():
+            self.write_message(message)
+            return
         # logger.debug('got massage %r')
         if message == "ping":
             self.write_message("ping")
