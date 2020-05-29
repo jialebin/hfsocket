@@ -91,8 +91,8 @@ class ChatSocket(BaseWebSocket):
         open_socket = {
             "type": "message",
             "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            "message": {
-                "message": "open websocket",
+            "message":  "open websocket",
+            "user": {
                 "user_name": self.user.get('username'),
                 "user_id": self.user.get('id')
             }
@@ -126,8 +126,8 @@ class ChatSocket(BaseWebSocket):
             return
         open_socket = {
             "type": "message",
-            "message": {
-                "message": "close websocket",
+            "message": "close websocket",
+            "user": {
                 "user_name": self.user.get('username'),
                 "user_id": self.user.get('id')
             }
