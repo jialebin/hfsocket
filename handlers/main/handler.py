@@ -104,9 +104,6 @@ class ChatSocket(BaseWebSocket):
             "user_id": self.user.get('id')
         }
         logger.debug("用户链接 --- {}".format(self.user.get("username")))
-        self.write_message(
-            json.dumps({"type": "str", "message": "链接成功", "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'), },
-                       ensure_ascii=False))
 
     def on_close(self) -> None:
         """
