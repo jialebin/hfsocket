@@ -271,7 +271,8 @@ class AdminChatSocket(BaseWebSocket):
         try:
             # waiter.set_header("Content-Type", "application/json")
             logger.debug("给 {} 发消息 {}".format(receiver, chat))
-            waiter = ChatSocket.waiters.get(receiver).get("socket")
+            receiver = ChatSocket.waiters.get(receiver)
+            waiter = receiver.get("socket")
             chat['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             logger.debug("给用户的最终消息{}".format(json.dumps(chat, ensure_ascii=False)))
             waiter.write_message(json.dumps(chat, ensure_ascii=False))
@@ -308,7 +309,13 @@ class AdminChatSocket(BaseWebSocket):
             logger.warning("消息错误 {}".format(message))
             return
         del message["receiver"]
+
         self.create_chat_log(receiver, message)
+        if not ChatSocket.waiters.get(receiver):
+            self.write_message(json.dumps({"type": "message",
+                                           "message": '该用户不存在或已下线'},
+                                          ensure_ascii=False))
+            return
         AdminChatSocket.send_updates(message, receiver)
 
     def create_chat_log(self, receiver, message):
