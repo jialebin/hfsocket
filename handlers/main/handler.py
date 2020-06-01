@@ -88,6 +88,10 @@ class ChatSocket(BaseWebSocket):
             return
         else:
             self.user = GetUserPub().get_user(token)
+            if not self.user:
+                self.write_message(json.dumps({"type": "message", "message": "用户错误"}, ensure_ascii=False))
+                super(ChatSocket, self).close()
+                return
         open_socket = {
             "type": "message",
             "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),

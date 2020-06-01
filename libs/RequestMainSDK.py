@@ -2,9 +2,10 @@ import os
 import urllib.request
 import threading
 import json
+from urllib.error import HTTPError
 
 try:
-    import pycurl
+    import pycurl1
     from io import BytesIO
 except ImportError:
     pycurl = None
@@ -56,7 +57,10 @@ class UrllibClient:
         else:
             if json:
                 req = urllib.request.Request(url=url, data=json.encode())
-        date = urllib.request.urlopen(req, timeout=second).read()
+        try:
+            date = urllib.request.urlopen(req, timeout=second).read()
+        except HTTPError:
+            return "{}"
         return date
 
     def post_json_ssl(self, json, url, headers=None, second=30):
@@ -141,16 +145,20 @@ class GetUserPub(CommonUtilPub):
         }
         req = self.get(ConFPub.GetUser_URL, header)
         user = self.bytes_to_odj(req)
-        return user
+        if user.get("id") and user.get("username"):
+            return user
+        else:
+            return
 
 
 if __name__ == '__main__':
-    cli = CommonUtilPub()
+    cli = GetUserPub()
 
-    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6IjE1NzMyNjcxOTc3IiwiZXhwIjoxNTkwMDY1MTMzLCJ1c2VyX2lkIjo2MCwiZW1haWwiOiJqbGIxMDI0QDE2My5jb20ifQ.ck-nTCeLgegnWfe6gi7-uUcyCurhg4eBEF857gyXH1E"
+    # token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ilx1NmQ0Ylx1OGJkNVx1NzUyOFx1NjIzNyIsInVzZXJfaWQiOjIyNywiZW1haWwiOiI3OTQyNjc3MDFAcXEuY29tIiwiZXhwIjoxNTkxMTEyNjIxfQ.uXXnVfniI8BdYqFRk0d3-teIdbszxcSUJkaTp84sqkU"
+    token = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Inl1bW9lcjIyIiwidXNlcl9pZCI6MjI2LCJlbWFpbCI6IjEzMDA4NDUyMzRAcXEuY29tIiwiZXhwIjoxNTkwNzg5NDUyfQ.UTaa0myKouNRnw9FFvQrBWIL0GCNW4F9Wjr9LXzuJRE"
     header = {
         "Authorization": "JWT " + token
     }
-    a = cli.get("http://www.hfyt365.com:8000/user/", header)
-    a = cli.bytes_to_odj(a)
+    a = cli.get_user(token)
+    # a = cli.bytes_to_odj(a)
     print(a)
